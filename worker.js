@@ -3,7 +3,6 @@ export default {
     try {
       const contentType = request.headers.get("content-type") || "";
       
-      // كندخلو ملفات FormData
       if (contentType.includes("multipart/form-data")) {
         const form = await request.formData();
         const videoFile = form.get("video");
@@ -14,17 +13,16 @@ export default {
           return new Response("Missing video or audio file", { status: 400 });
         }
 
-        // FFmpeg WASM
         const { FFmpeg } = await import("@ffmpeg/ffmpeg");
         const ffmpeg = new FFmpeg();
 
         await ffmpeg.load();
 
-        // كنسجلو الملفات فـ FS ديال FFmpeg
+      
         await ffmpeg.writeFile("input.mp4", await videoFile.arrayBuffer());
         await ffmpeg.writeFile("audio.mp3", await audioFile.arrayBuffer());
 
-        // أمر الدمج
+        // 
         await ffmpeg.exec([
           "-i", "input.mp4",
           "-i", "audio.mp3",
@@ -33,7 +31,7 @@ export default {
           "output." + format
         ]);
 
-        // نخرجو الفيديو النهائي
+        //
         const output = await ffmpeg.readFile("output." + format);
 
         return new Response(output, {
